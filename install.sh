@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-RELEASE_REPO="${NOPEID_RELEASE_REPO:-nopeid/releases}"
+RELEASE_REPO="${NOPEID_RELEASE_REPO:-nopeid/public}"
 BASE_URL="${BASE_URL:-}"
 MIN_MACOS_MAJOR=26
 
@@ -52,13 +52,17 @@ Usage:
              [--version vX.Y.Z] [--channel stable|beta] [--target-user user]
              [--artifact /abs/path/nopeid-agent-macos-<arch>.tar.gz]
              [--checksum /abs/path/nopeid-agent-macos-<arch>.tar.gz.sha256]
-  install.sh --dev --binary /abs/path/nopeid --helper /abs/path/nopeid-helper
+  install.sh --dev [--binary /abs/path/nopeid --helper /abs/path/nopeid-helper]
   install.sh --uninstall [--purge-system] [--keep-data] [--dev]
+
+Dev defaults:
+  When --dev is used without --binary and --helper, install.sh uses
+  agent/bin/nopeid and agent/bin/nopeid-helper.
 
 Environment overrides:
   NOPEID_VERSION                 Release version to install.
   NOPEID_CHANNEL                 Release channel. Defaults to stable.
-  NOPEID_RELEASE_REPO            Public release repo, e.g. nopeid/releases.
+  NOPEID_RELEASE_REPO            Public release repo, e.g. nopeid/public.
 EOF
 }
 
@@ -143,6 +147,38 @@ parse_args() {
 		esac
 		shift
 	done
+}
+
+default_dev_bin_dir() {
+	cwd_default="$(pwd -P)/agent/bin"
+	if [ -d "$cwd_default" ]; then
+		printf '%s\n' "$cwd_default"
+		return
+	fi
+
+	script_parent="$(CDPATH= cd "$(dirname "$0")/.." 2>/dev/null && pwd -P || true)"
+	if [ -n "$script_parent" ] && [ -d "$script_parent/agent/bin" ]; then
+		printf '%s\n' "$script_parent/agent/bin"
+		return
+	fi
+
+	printf '%s\n' "$cwd_default"
+}
+
+resolve_dev_paths() {
+	if [ "$DEV" -ne 1 ] || [ "$DO_UNINSTALL" -eq 1 ]; then
+		return
+	fi
+	if [ -z "$DEV_BINARY" ] && [ -z "$DEV_HELPER" ]; then
+		dev_bin_dir="$(default_dev_bin_dir)"
+		DEV_BINARY="$dev_bin_dir/nopeid"
+		DEV_HELPER="$dev_bin_dir/nopeid-helper"
+		return
+	fi
+	if [ -z "$DEV_BINARY" ] || [ -z "$DEV_HELPER" ]; then
+		echo "--dev requires both --binary and --helper, or neither to use agent/bin defaults." >&2
+		exit 1
+	fi
 }
 
 detect_arch() {
@@ -495,14 +531,33 @@ program_version() {
 	"$program" --version 2>/dev/null | awk -F': ' '/AgentVersion:/ {print $2; exit}'
 }
 
+launchd_pid() {
+	service_id="$1"
+	launchctl print "system/$service_id" 2>/dev/null | awk -F'= ' '/^[[:space:]]*pid = / {print $2; exit}'
+}
+
+launchd_program() {
+	service_id="$1"
+	launchctl print "system/$service_id" 2>/dev/null | awk -F'= ' '/^[[:space:]]*program = / {print $2; exit}'
+}
+
 health_check() {
 	expected="$1"
-	program="$2"
+	version_program="$2"
 	service_id="$3"
+	service_program="$4"
 	for _ in 1 2 3 4 5 6 7 8 9 10; do
-		launchctl print "system/$service_id" >/dev/null 2>&1 && \
-			{ pgrep -x nopeid-agent >/dev/null 2>&1 || pgrep -x nopeid >/dev/null 2>&1; } && \
-			[ "$(program_version "$program")" = "$expected" ] && return 0
+		pid="$(launchd_pid "$service_id")"
+		loaded_program="$(launchd_program "$service_id")"
+		case "$pid" in
+		""|*[!0-9]*)
+			sleep 1
+			continue
+			;;
+		esac
+		[ "$loaded_program" = "$service_program" ] && \
+			kill -0 "$pid" 2>/dev/null && \
+			[ "$(program_version "$version_program")" = "$expected" ] && return 0
 		sleep 1
 	done
 	return 1
@@ -573,7 +628,7 @@ install_prod() {
 	ensure_settings_file
 
 	if [ "${NOPEID_PRIV_NO_START:-0}" -ne 1 ]; then
-		if ! start_service "$PROD_SERVICE_ID" "$PROD_PLIST" || ! health_check "$version" "$BIN_DIR/nopeid" "$PROD_SERVICE_ID"; then
+		if ! start_service "$PROD_SERVICE_ID" "$PROD_PLIST" || ! health_check "$version" "$BIN_DIR/nopeid" "$PROD_SERVICE_ID" "$BIN_DIR/nopeid-agent"; then
 			warn "New version failed health checks; rolling back."
 			stop_launchdaemons
 			if [ -n "$previous_current" ]; then
@@ -671,10 +726,7 @@ main() {
 	detect_arch
 	if [ "$DO_UNINSTALL" -ne 1 ]; then
 		check_macos_version
-		if [ "$DEV" -eq 1 ] && { [ -z "$DEV_BINARY" ] || [ -z "$DEV_HELPER" ]; }; then
-			echo "--dev requires --binary and --helper." >&2
-			exit 1
-		fi
+		resolve_dev_paths
 		confirm_plan
 		stage_artifact
 	else
