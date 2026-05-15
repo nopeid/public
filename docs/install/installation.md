@@ -33,22 +33,3 @@ curl -fsSL https://nopeid.com/install.sh | sh -s -- --dry-run
 ```
 
 NopeID requires macOS 26 Tahoe or newer.
-
-## Dev Installs
-
-Development mode is explicit:
-
-```sh
-./install.sh --dev
-./install.sh --dev --binary /path/to/nopeid --helper /path/to/nopeid-helper
-```
-
-When paths are omitted, `--dev` uses `agent/bin/nopeid` and
-`agent/bin/nopeid-helper`. It resolves `agent/bin` from the current working
-directory first, then as the sibling agent checkout when running from the public
-repository.
-
-Dev mode may point launchd at local build outputs. It stops any production
-NopeID service first because two NopeID agents must not run at the same time.
-Dev mode does not promise production rollback, receipt, or versioned layout
-behavior.
