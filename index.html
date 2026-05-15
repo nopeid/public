@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="NopeID gives you visibility and control over AI agents on your endpoints.">
+  <meta name="color-scheme" content="light dark">
+  <title>NopeID - On-Device Security</title>
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #f7f8fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #5b6472;
+      --faint: #8a94a3;
+      --border: #e3e7ef;
+      --primary: #2563eb;
+      --primary-soft: #eaf1ff;
+      --shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #090d14;
+        --bg-soft: #101722;
+        --card: #0e1520;
+        --text: #f8fafc;
+        --muted: #a3adbc;
+        --faint: #687586;
+        --border: rgba(255, 255, 255, 0.1);
+        --primary: #60a5fa;
+        --primary-soft: rgba(96, 165, 250, 0.13);
+        --shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .site-header {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav,
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 750;
+    }
+
+    .brand-icon,
+    .panel-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 136px 0 72px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.12), transparent 42%),
+        linear-gradient(180deg, var(--bg-soft), var(--bg));
+    }
+
+    .hero .wrap {
+      position: relative;
+      max-width: 920px;
+      text-align: center;
+    }
+
+    .badges,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--card) 84%, transparent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge.is-muted {
+      color: var(--faint);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 22px;
+      font-size: clamp(44px, 8vw, 76px);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .accent {
+      color: var(--primary);
+    }
+
+    .lede {
+      max-width: 720px;
+      margin: 22px auto 0;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 20px);
+      line-height: 1.7;
+    }
+
+    .actions {
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 48px;
+      padding: 0 22px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 750;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      color: #ffffff;
+      background: #2563eb;
+    }
+
+    .button.primary:hover {
+      background: #1d4ed8;
+    }
+
+    .button.secondary {
+      color: var(--muted);
+      background: transparent;
+      border-color: var(--border);
+    }
+
+    .button.secondary:hover {
+      color: var(--text);
+      background: var(--bg-soft);
+    }
+
+    .install-card {
+      max-width: 760px;
+      margin: 34px auto 0;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--card) 90%, transparent);
+      box-shadow: var(--shadow);
+      text-align: left;
+    }
+
+    .install-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .eyebrow {
+      color: var(--faint);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .install-head p:last-child {
+      color: var(--muted);
+    }
+
+    .copy-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      background: var(--bg-soft);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .copy-button:hover {
+      color: var(--text);
+    }
+
+    .install-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    pre {
+      margin: 14px 0 0;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-soft);
+      padding: 14px 16px;
+    }
+
+    code {
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      white-space: pre;
+    }
+
+    .trust-line {
+      margin-top: 18px;
+      color: var(--faint);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .section {
+      padding: 68px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .section.alt {
+      background: linear-gradient(180deg, var(--bg), var(--bg-soft));
+    }
+
+    .feature-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .feature-row {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.34fr) minmax(0, 0.66fr);
+      gap: 26px;
+      align-items: start;
+      padding: 26px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.05);
+    }
+
+    .feature-row.primary {
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--primary-soft) 70%, transparent), transparent 58%),
+        var(--card);
+    }
+
+    .feature-intro {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel-icon {
+      display: inline-flex;
+      width: 42px;
+      height: 42px;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      border-radius: 10px;
+      background: var(--primary-soft);
+      flex: 0 0 auto;
+    }
+
+    .feature-item-icon {
+      position: relative;
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      margin-bottom: 10px;
+      color: var(--primary);
+      border-radius: 8px;
+      background: var(--primary-soft);
+      line-height: 0;
+    }
+
+    .feature-item-icon svg {
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      flex: 0 0 auto;
+      transform: translate(-50%, -50%);
+    }
+
+    .option-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .option-list li {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .option-list li:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .option-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .option-main .feature-item-icon {
+      margin-bottom: 0;
+    }
+
+    .option-list strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .option-list span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      color: var(--primary);
+      background: var(--primary-soft);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .feature-row h3 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.12;
+    }
+
+    .feature-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .feature-intro .actions {
+      justify-content: flex-start;
+      margin-top: 0;
+    }
+
+    .enterprise-panel {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.95fr) minmax(0, 1.05fr);
+      gap: 30px;
+      align-items: start;
+      padding: 32px;
+      border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--primary-soft) 85%, transparent), transparent 42%),
+        var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .enterprise-copy {
+      display: grid;
+      gap: 18px;
+    }
+
+    .enterprise-copy h3 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 46px);
+      line-height: 1.06;
+    }
+
+    .enterprise-copy .actions {
+      justify-content: flex-start;
+      margin-top: 2px;
+    }
+
+    .enterprise-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .enterprise-grid li {
+      display: grid;
+      grid-template-rows: 28px auto 1fr;
+      align-items: center;
+      justify-items: center;
+      min-height: 170px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--card) 82%, transparent);
+      text-align: center;
+    }
+
+    .enterprise-grid .feature-item-icon {
+      margin-inline: auto;
+      margin-bottom: 0;
+    }
+
+    .enterprise-grid strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .enterprise-grid span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--border);
+      color: var(--faint);
+      background: var(--bg);
+      font-size: 13px;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 28px 0;
+    }
+
+    .footer-inner a {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .footer-inner a:hover {
+      color: var(--text);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .sr-status {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 880px) {
+      .feature-row {
+        grid-template-columns: 1fr;
+      }
+
+      .enterprise-panel {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        padding-top: 116px;
+      }
+
+      .actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .button,
+      .copy-button {
+        width: 100%;
+      }
+
+      .install-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .feature-row {
+        padding: 22px;
+      }
+
+      .enterprise-panel {
+        padding: 22px;
+      }
+
+      .enterprise-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="/" aria-label="NopeID home">
+        <span class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z">
+            </path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+        </span>
+        <span>NopeID</span>
+      </a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div class="badges" aria-label="Platform availability">
+          <span class="badge">
+            <svg width="13" height="13" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true">
+              <path
+                d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 52.3-11.4 69.5-34.3z">
+              </path>
+            </svg>
+            macOS available
+          </span>
+          <span class="badge is-muted">
+            <svg width="13" height="13" viewBox="0 0 88 88" fill="currentColor" aria-hidden="true">
+              <path
+                d="M0 12.4 35.7 7.5v34.5L0 42.2zm35.7 33.5v34.5L0 71.3V42.2zm4.9-39L87.3 0v41.5l-46.8-.2zm0 38.4 46.8-.3v36.8l-46.8-6.6z">
+              </path>
+            </svg>
+            Windows soon
+          </span>
+          <span class="badge is-muted">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2a5 5 0 0 0-5 5v3.5L5 14v4h14v-4l-2-3.5V7a5 5 0 0 0-5-5Z"></path>
+              <path d="M8 18v2"></path>
+              <path d="M16 18v2"></path>
+              <path d="M10 7h.01"></path>
+              <path d="M14 7h.01"></path>
+            </svg>
+            Linux soon
+          </span>
+        </div>
+
+        <h1>Secure your<br><span class="accent">AI agent runtime</span></h1>
+        <p class="lede">NopeID gives you visibility and control over AI agents on your endpoints. Discover shadow AI,
+          protect reasoning, and block risky behavior in real time. 100% on-device, privacy-first, and free for personal
+          use.</p>
+
+        <div class="actions">
+          <a class="button primary" href="#install">Start Free
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </a>
+          <a class="button secondary" href="mailto:sales@nopeid.com?subject=NopeID%20demo%20request">Book a Demo</a>
+        </div>
+
+        <div class="install-card" id="install">
+          <div class="install-head">
+            <div>
+              <p class="eyebrow">Quick Install</p>
+              <p>Install NopeID on macOS with one command.</p>
+            </div>
+            <div class="install-actions">
+              <a class="copy-button" href="https://github.com/nopeid/public" aria-label="NopeID public repository on GitHub">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M12 .5A12 12 0 0 0 8.2 23.9c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 .1.8 2.1 3.4 1.5.1-.7.4-1.2.7-1.5-2.6-.3-5.4-1.3-5.4-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.9 5 18.9 5.3 18.9 5.3c.6 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.4 5.9.4.4.8 1.1.8 2.2v3.4c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z">
+                  </path>
+                </svg>
+              </a>
+              <button class="copy-button" type="button" data-copy-command>Copy</button>
+            </div>
+          </div>
+          <pre><code id="install-command">curl -fsSL https://nopeid.com/install.sh | sh</code></pre>
+        </div>
+
+        <p class="trust-line">On-device by design. Your data stays local. Free for personal use.</p>
+      </div>
+    </section>
+
+    <section class="section alt" id="features">
+      <div class="wrap">
+        <div class="feature-stack">
+          <article class="feature-row primary">
+            <div class="feature-intro">
+              <span class="panel-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z">
+                  </path>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+              </span>
+              <div>
+                <p class="eyebrow">Protection</p>
+                <h3>Guard the agent before it acts</h3>
+              </div>
+              <p class="feature-copy">Check reasoning, launch context, memory state, intent, and commands before risky
+                activity reaches the machine.</p>
+            </div>
+            <ul class="option-list">
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 18V5"></path>
+                      <path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"></path>
+                      <path d="M17.6 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.6 1.5"></path>
+                      <path d="M18 18a4 4 0 0 0 2-7.46"></path>
+                      <path d="M6 18a4 4 0 0 1-2-7.46"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Anomaly Detection</strong><span>Detect behavior that does not match the agent's expected
+                      task or session pattern.</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14.5 4h-5L7 7H4v5l3 2.5V18h10v-3.5l3-2.5V7h-3z"></path>
+                      <path d="M9 12h6"></path>
+                      <path d="M12 9v6"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Skill Injection</strong><span>Catch unauthorized capabilities entering the agent
+                      runtime.</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"></path>
+                      <path d="M8 9h8"></path>
+                      <path d="M8 13h5"></path>
+                      <path d="M8 17h8"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Memory</strong><span>Watch persisted context for unsafe or unexpected changes.</span>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12h14"></path>
+                      <path d="m13 6 6 6-6 6"></path>
+                      <path d="M5 5v14"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Launch Safety</strong><span>Validate how an agent starts before giving it room to
+                      act.</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <circle cx="12" cy="12" r="4"></circle>
+                      <path d="M22 12h-4"></path>
+                      <path d="M6 12H2"></path>
+                      <path d="M12 6V2"></path>
+                      <path d="M12 22v-4"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Intent</strong><span>Compare actions against the task the agent is meant to
+                      complete.</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path>
+                      <path d="M12 9v4"></path>
+                      <path d="M12 17h.01"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Risky Commands</strong><span>Flag destructive, privileged, or suspicious terminal
+                      actions.</span></div>
+                </div>
+              </li>
+            </ul>
+          </article>
+
+          <article class="feature-row">
+            <div class="feature-intro">
+              <span class="panel-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+                  <path d="M7 8h10"></path>
+                  <path d="M7 12h6"></path>
+                  <path d="M10 22h4"></path>
+                  <path d="M12 18v4"></path>
+                </svg>
+              </span>
+              <div>
+                <p class="eyebrow">Runtime</p>
+                <h3>Choose the execution boundary</h3>
+              </div>
+              <p class="feature-copy">Run agent activity in the right runtime for the task, from native host controls to
+                hostless or remote execution.</p>
+            </div>
+            <ul class="option-list">
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <path d="M14 2v6h6"></path>
+                      <path d="M8 13h8"></path>
+                      <path d="M8 17h6"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Journaling / audit</strong><span>Record runtime actions for review, traceability, and
+                      compliance.</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M10.3 4.3 12 3l7 5v8a2 2 0 0 1-2 2h-2"></path>
+                      <path d="M4 4l16 16"></path>
+                      <path d="M4 10v6a2 2 0 0 0 2 2h8"></path>
+                    </svg>
+                  </span>
+                  <div><strong>No sandbox running on host</strong><span>Keep untrusted execution off the user's
+                      machine.</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="18" height="12" x="3" y="4" rx="2"></rect>
+                      <path d="M8 20h8"></path>
+                      <path d="M12 16v4"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Native sandboxing</strong><span>Local policy controls for desktop agents.</span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </article>
+
+          <article class="feature-row">
+            <div class="feature-intro">
+              <span class="panel-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46L12.06 8.65A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z">
+                  </path>
+                </svg>
+              </span>
+              <div>
+                <p class="eyebrow">Enforcement</p>
+                <h3>Stop unsafe work in real time</h3>
+              </div>
+              <p class="feature-copy">Apply policy while the agent is acting, then suspend, kill, or quarantine when
+                risk crosses the line.</p>
+            </div>
+            <ul class="option-list">
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="m16 11 2 2 4-4"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Human approval</strong><span>Require a trusted person before sensitive actions
+                      continue.</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M13 2 3 14h8l-1 8 10-12h-8z"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Real-time action enforcement</strong><span>Apply policy as behavior happens.</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M10 8v8"></path>
+                      <path d="M14 8v8"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Suspend or kill</strong><span>Pause unsafe activity or terminate risky processes.</span>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="option-main">
+                  <span class="feature-item-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path
+                        d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z">
+                      </path>
+                      <path d="M9 12h6"></path>
+                    </svg>
+                  </span>
+                  <div><strong>Quarantine</strong><span>Contain affected sessions for review.</span></div>
+                </div>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <article class="enterprise-panel">
+          <div class="enterprise-copy">
+            <span class="panel-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 21h18"></path>
+                <path d="M5 21V7l8-4v18"></path>
+                <path d="M19 21V11l-6-4"></path>
+                <path d="M9 9h1"></path>
+                <path d="M9 13h1"></path>
+                <path d="M9 17h1"></path>
+              </svg>
+            </span>
+            <div>
+              <p class="eyebrow">Enterprise</p>
+              <h3>Secure every AI agent before it acts</h3>
+            </div>
+            <p class="feature-copy">Deploy NopeID across your organization with custom scanners, fleet policies, audit
+              reporting, procurement support, and controls for larger teams.</p>
+            <div class="actions">
+              <a class="button primary" href="mailto:sales@nopeid.com?subject=NopeID%20enterprise%20demo">Book demo</a>
+              <a class="button secondary" href="mailto:sales@nopeid.com?subject=NopeID%20enterprise%20inquiry">Contact us</a>
+            </div>
+          </div>
+          <ul class="enterprise-grid">
+            <li>
+              <span class="feature-item-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M7 12h10"></path>
+                  <path d="M10 18h4"></path>
+                  <circle cx="6" cy="6" r="2"></circle>
+                  <circle cx="12" cy="12" r="2"></circle>
+                  <circle cx="18" cy="18" r="2"></circle>
+                </svg>
+              </span>
+              <strong>Custom scanners</strong>
+              <span>Add organization-specific checks for tools, repos, secrets, and workflows.</span>
+            </li>
+            <li>
+              <span class="feature-item-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 7h-9"></path>
+                  <path d="M14 17H5"></path>
+                  <circle cx="17" cy="17" r="3"></circle>
+                  <circle cx="7" cy="7" r="3"></circle>
+                </svg>
+              </span>
+              <strong>Central policy management</strong>
+              <span>Define approvals, runtime boundaries, and enforcement rules across fleets.</span>
+            </li>
+            <li>
+              <span class="feature-item-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 3v18h18"></path>
+                  <path d="M7 15l4-4 3 3 5-7"></path>
+                </svg>
+              </span>
+              <strong>Enterprise reporting</strong>
+              <span>Export audit trails, risk events, and control outcomes for security review.</span>
+            </li>
+            <li>
+              <span class="feature-item-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </span>
+              <strong>Team access controls</strong>
+              <span>Manage seats, roles, and administrative access for security teams.</span>
+            </li>
+          </ul>
+        </article>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>&copy; 2026 NopeID. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/nopeid" aria-label="NopeID on GitHub">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              d="M12 .5A12 12 0 0 0 8.2 23.9c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 .1.8 2.1 3.4 1.5.1-.7.4-1.2.7-1.5-2.6-.3-5.4-1.3-5.4-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.9 5 18.9 5.3 18.9 5.3c.6 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.4 5.9.4.4.8 1.1.8 2.2v3.4c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z">
+            </path>
+          </svg>
+          GitHub
+        </a>
+        <a href="mailto:sales@nopeid.com">sales@nopeid.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <p class="sr-status" aria-live="polite" data-copy-status></p>
+  <script>
+    const copyButton = document.querySelector("[data-copy-command]");
+    const copyStatus = document.querySelector("[data-copy-status]");
+    const installCommand = document.getElementById("install-command").textContent;
+
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(installCommand);
+        copyButton.textContent = "Copied";
+        copyStatus.textContent = "Install command copied.";
+        window.setTimeout(() => {
+          copyButton.textContent = "Copy Command";
+        }, 1800);
+      } catch {
+        copyStatus.textContent = "Copy failed. Select the command text to copy it.";
+      }
+    });
+  </script>
+</body>
+
+</html>
