@@ -166,7 +166,7 @@ default_dev_bin_dir() {
 }
 
 resolve_dev_paths() {
-	if [ "$DEV" -ne 1 ] || [ "$DO_UNINSTALL" -eq 1 ]; then
+	if [ "$DEV" -ne 1 ]; then
 		return
 	fi
 	if [ -z "$DEV_BINARY" ] && [ -z "$DEV_HELPER" ]; then
@@ -175,7 +175,7 @@ resolve_dev_paths() {
 		DEV_HELPER="$dev_bin_dir/nopeid-helper"
 		return
 	fi
-	if [ -z "$DEV_BINARY" ] || [ -z "$DEV_HELPER" ]; then
+	if [ "$DO_UNINSTALL" -ne 1 ] && { [ -z "$DEV_BINARY" ] || [ -z "$DEV_HELPER" ]; }; then
 		echo "--dev requires both --binary and --helper, or neither to use agent/bin defaults." >&2
 		exit 1
 	fi
@@ -319,6 +319,45 @@ stage_artifact() {
 }
 
 confirm_plan() {
+	if [ "$DO_UNINSTALL" -eq 1 ]; then
+		step "Uninstall configuration"
+		if [ "$DEV" -eq 1 ]; then
+			info "Mode: dev uninstall"
+			info "Dev binary for cleanup: ${DEV_BINARY:-auto-detect}"
+			info "Remove install root: no"
+		else
+			info "Mode: production uninstall"
+			info "Remove install root: /opt/nopeid"
+		fi
+		info "Clear Agentguard hooks/shims: yes"
+		if [ "$KEEP_DATA" -eq 1 ]; then
+			info "Data/log cleanup: keep"
+		elif [ "$PURGE_SYSTEM" -eq 1 ]; then
+			info "Data/log cleanup: remove /var/lib/nopeid and /var/log/nopeid"
+		else
+			info "Data/log cleanup: keep"
+		fi
+		if [ "$DRY_RUN" -eq 1 ]; then
+			ok "Dry run complete"
+			exit 0
+		fi
+		if [ "$YES" -eq 1 ]; then
+			return
+		fi
+		if [ "$NON_INTERACTIVE" -eq 1 ]; then
+			echo "--non-interactive requires --yes." >&2
+			exit 1
+		fi
+		printf 'Continue? [y/N]: '
+		read answer
+		answer="$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')"
+		if [ "$answer" != "y" ] && [ "$answer" != "yes" ]; then
+			echo "Uninstall cancelled." >&2
+			exit 1
+		fi
+		return
+	fi
+
 	step "Install configuration"
 	if [ "$DEV" -eq 1 ]; then
 		info "Mode: dev"
@@ -563,6 +602,53 @@ health_check() {
 	return 1
 }
 
+plist_program() {
+	plist="$1"
+	/usr/bin/plutil -extract ProgramArguments.0 raw -o - "$plist" 2>/dev/null || true
+}
+
+cleanup_launchd_env_for_user() {
+	user="$1"
+	uid="$(id -u "$user" 2>/dev/null || true)"
+	if [ -z "$uid" ]; then
+		return
+	fi
+	for key in CODEX_CLI_PATH NOPEID_CODEX_REAL_BINARY; do
+		/bin/launchctl asuser "$uid" /bin/launchctl unsetenv "$key" >/dev/null 2>&1 || true
+	done
+}
+
+cleanup_agentguard_for_user() {
+	if ! user="$(resolve_settings_user)"; then
+		warn "Unable to resolve target user for Agentguard cleanup; managed provider hooks may remain."
+		return
+	fi
+
+	agentguard_bin=""
+	for candidate in \
+		"${NOPEID_PRIV_DEV_BINARY:-}" \
+		"$(plist_program "$DEV_PLIST")" \
+		"$BIN_DIR/nopeid" \
+		"$CURRENT_LINK/bin/nopeid"
+	do
+		if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+			agentguard_bin="$candidate"
+			break
+		fi
+	done
+
+	if [ -n "$agentguard_bin" ]; then
+		if "$agentguard_bin" tool agentguard uninstall --target-user "$user"; then
+			ok "Agentguard provider hooks cleared for $user"
+		else
+			warn "Failed to clear Agentguard provider hooks for $user"
+		fi
+	else
+		warn "No NopeID binary found for Agentguard cleanup; managed provider hooks may remain."
+	fi
+	cleanup_launchd_env_for_user "$user"
+}
+
 safe_version_component() {
 	printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_'
 }
@@ -692,6 +778,7 @@ install_dev() {
 
 uninstall_nopeid() {
 	stop_all_nopeid
+	cleanup_agentguard_for_user
 	rm -f "$PROD_PLIST" "$DEV_PLIST"
 	if [ "${NOPEID_PRIV_DEV:-0}" -ne 1 ]; then
 		rm -rf "$INSTALL_ROOT"
@@ -730,6 +817,7 @@ main() {
 		confirm_plan
 		stage_artifact
 	else
+		resolve_dev_paths
 		confirm_plan
 		STAGED_ARTIFACT=""
 		EXPECTED_VERSION=""
