@@ -235,6 +235,25 @@ download_with_retries() {
 	curl -fL --retry 2 --retry-delay 2 --connect-timeout 20 --max-time 120 "$url" -o "$out"
 }
 
+confirm_continue() {
+	answer=""
+	if [ ! -t 0 ] && { [ -t 1 ] || [ -t 2 ]; }; then
+		if { exec 3<>/dev/tty; } 2>/dev/null; then
+			printf 'Continue? [y/N]: ' >&3
+			IFS= read -r answer <&3 || answer=""
+			exec 3<&-
+		else
+			printf 'Continue? [y/N]: '
+			IFS= read -r answer || answer=""
+		fi
+	else
+		printf 'Continue? [y/N]: '
+		IFS= read -r answer || answer=""
+	fi
+	answer="$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')"
+	[ "$answer" = "y" ] || [ "$answer" = "yes" ]
+}
+
 verify_sha256() {
 	path="$1"
 	expected="$2"
@@ -348,10 +367,7 @@ confirm_plan() {
 			echo "--non-interactive requires --yes." >&2
 			exit 1
 		fi
-		printf 'Continue? [y/N]: '
-		read answer
-		answer="$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')"
-		if [ "$answer" != "y" ] && [ "$answer" != "yes" ]; then
+		if ! confirm_continue; then
 			echo "Uninstall cancelled." >&2
 			exit 1
 		fi
@@ -383,10 +399,7 @@ confirm_plan() {
 		echo "--non-interactive requires --yes." >&2
 		exit 1
 	fi
-	printf 'Continue? [y/N]: '
-	read answer
-	answer="$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')"
-	if [ "$answer" != "y" ] && [ "$answer" != "yes" ]; then
+	if ! confirm_continue; then
 		echo "Install cancelled." >&2
 		exit 1
 	fi
