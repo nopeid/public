@@ -1,20 +1,20 @@
 {
-  "version": "v0.0.3-beta",
+  "version": "v0.9.9",
   "channel": "stable",
-  "published_at": "2026-05-19T20:34:16Z",
-  "release_url": "https://github.com/nopeid/public/releases/tag/v0.0.3-beta",
-  "install_command": "curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.0.3-beta sh",
+  "published_at": "2026-05-19T20:44:25Z",
+  "release_url": "https://github.com/nopeid/public/releases/tag/v0.9.9",
+  "install_command": "curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.9.9 sh",
   "minimum_macos": "26.0",
-  "build_commit": "8b6b636a9b0d0cbfbbc9c43e51d5ff18b609d370",
-  "build_time": "2026-05-19T20:34:16Z",
+  "build_commit": "ad5de5140b0ce2a0d2c639d89aaa8b41a13335c3",
+  "build_time": "2026-05-19T20:44:25Z",
   "artifacts": {
     "macos-arm64": {
-      "url": "https://github.com/nopeid/public/releases/download/v0.0.3-beta/nopeid-agent-macos-arm64.tar.gz",
-      "sha256": "8fb47870062517d29448ccb3ca720f78f60e4e8b1ee04140e70d119dee2eba02"
+      "url": "https://github.com/nopeid/public/releases/download/v0.9.9/nopeid-agent-macos-arm64.tar.gz",
+      "sha256": "8688ca640f2fb786854bec7c5eaccc945e5755be2df65d68b8f5d9cd367ae52a"
     },
     "macos-amd64": {
-      "url": "https://github.com/nopeid/public/releases/download/v0.0.3-beta/nopeid-agent-macos-amd64.tar.gz",
-      "sha256": "133399786b0ff4f906791cc0cff011a733b4f467a2bcf2546644e663e0143aaa"
+      "url": "https://github.com/nopeid/public/releases/download/v0.9.9/nopeid-agent-macos-amd64.tar.gz",
+      "sha256": "b4b2b88824c6cb04460ae201ec3905f11e5a1e14560088505fe9b64bd228eb11"
     }
   }
 }
