@@ -12,6 +12,12 @@ Pinned upgrades use the release version:
 curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.1.2 sh
 ```
 
+Non-interactive upgrades can opt into confirmation through environment flags:
+
+```sh
+curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.1.2 NOPEID_YES=1 NOPEID_NON_INTERACTIVE=1 sh
+```
+
 During upgrade, the installer:
 
 1. Acquires `/var/run/nopeid-install.lock`.
@@ -28,8 +34,8 @@ If the production health check fails, the installer restores the previous
 version and previous LaunchDaemon plist, then restarts the previous version
 unless `--no-start` was used.
 
-The helper displays update availability only. It does not install updates.
-The tray menu offers release notes and a pinned install command.
+The helper can start a confirmed update through the root agent when trusted
+release metadata is available.
 
 After install or upgrade, restart the production agent with:
 

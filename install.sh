@@ -10,8 +10,8 @@ CHECKSUM_PATH=""
 VERSION="${NOPEID_VERSION:-}"
 CHANNEL="${NOPEID_CHANNEL:-stable}"
 TARGET_USER=""
-YES=0
-NON_INTERACTIVE=0
+YES="${NOPEID_YES:-0}"
+NON_INTERACTIVE="${NOPEID_NON_INTERACTIVE:-0}"
 DRY_RUN=0
 NO_START=0
 DO_UNINSTALL=0
@@ -63,7 +63,16 @@ Environment overrides:
   NOPEID_VERSION                 Release version to install.
   NOPEID_CHANNEL                 Release channel. Defaults to stable.
   NOPEID_RELEASE_REPO            Public release repo, e.g. nopeid/public.
+  NOPEID_YES                     Set to 1 to skip confirmation prompts.
+  NOPEID_NON_INTERACTIVE         Set to 1 to fail instead of prompting unless NOPEID_YES=1.
 EOF
+}
+
+normalize_bool() {
+	case "$1" in
+	1|true|TRUE|yes|YES|y|Y) printf '1\n' ;;
+	*) printf '0\n' ;;
+	esac
 }
 
 cleanup() {
@@ -81,6 +90,8 @@ need_cmd() {
 }
 
 parse_args() {
+	YES="$(normalize_bool "$YES")"
+	NON_INTERACTIVE="$(normalize_bool "$NON_INTERACTIVE")"
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		--yes|-y)
@@ -239,19 +250,19 @@ confirm_continue() {
 	answer=""
 	if [ ! -t 0 ] && { [ -t 1 ] || [ -t 2 ]; }; then
 		if { exec 3<>/dev/tty; } 2>/dev/null; then
-			printf 'Continue? [y/N]: ' >&3
+			printf 'Continue? [Y/n]: ' >&3
 			IFS= read -r answer <&3 || answer=""
 			exec 3<&-
 		else
-			printf 'Continue? [y/N]: '
+			printf 'Continue? [Y/n]: '
 			IFS= read -r answer || answer=""
 		fi
 	else
-		printf 'Continue? [y/N]: '
+		printf 'Continue? [Y/n]: '
 		IFS= read -r answer || answer=""
 	fi
 	answer="$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')"
-	[ "$answer" = "y" ] || [ "$answer" = "yes" ]
+	[ -z "$answer" ] || [ "$answer" = "y" ] || [ "$answer" = "yes" ]
 }
 
 verify_sha256() {

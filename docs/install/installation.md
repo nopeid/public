@@ -42,6 +42,7 @@ Supported options:
 ```sh
 curl -fsSL https://nopeid.com/install.sh | sh -s -- --yes
 curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.1.2 sh
+curl -fsSL https://nopeid.com/install.sh | env NOPEID_YES=1 NOPEID_NON_INTERACTIVE=1 sh
 curl -fsSL https://nopeid.com/install.sh | sh -s -- --dry-run
 ```
 
