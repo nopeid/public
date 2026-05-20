@@ -411,6 +411,8 @@ INSTALL_ROOT="/opt/nopeid"
 VERSIONS_DIR="$INSTALL_ROOT/versions"
 CURRENT_LINK="$INSTALL_ROOT/current"
 BIN_DIR="$INSTALL_ROOT/bin"
+USER_BIN_DIR="/usr/local/bin"
+USER_BIN_LINK="$USER_BIN_DIR/nopeid"
 DATA_ROOT="/var/lib/nopeid"
 LOG_ROOT="/var/log/nopeid"
 RECEIPT_DIR="$DATA_ROOT/install"
@@ -565,6 +567,28 @@ start_service() {
 	launchctl kickstart -k "system/$service_id"
 }
 
+install_path_symlink() {
+	mkdir -p "$USER_BIN_DIR"
+	validate_path_symlink
+	ln -sfn "$BIN_DIR/nopeid" "$USER_BIN_LINK"
+}
+
+validate_path_symlink() {
+	if [ -e "$USER_BIN_LINK" ] || [ -L "$USER_BIN_LINK" ]; then
+		current="$(readlink "$USER_BIN_LINK" 2>/dev/null || true)"
+		if [ "$current" != "$BIN_DIR/nopeid" ]; then
+			echo "$USER_BIN_LINK already exists and does not point to $BIN_DIR/nopeid" >&2
+			exit 1
+		fi
+	fi
+}
+
+remove_path_symlink() {
+	if [ -L "$USER_BIN_LINK" ] && [ "$(readlink "$USER_BIN_LINK" 2>/dev/null || true)" = "$BIN_DIR/nopeid" ]; then
+		rm -f "$USER_BIN_LINK"
+	fi
+}
+
 program_version() {
 	program="$1"
 	"$program" --version 2>/dev/null | awk -F': ' '/AgentVersion:/ {print $2; exit}'
@@ -690,6 +714,7 @@ install_prod() {
 	install -m 0755 -o root -g wheel "$extract_root/nopeid-helper" "$stage_root/bin/nopeid-helper"
 	ln -sfn nopeid "$stage_root/bin/nopeid-agent"
 	rm -rf "$extract_root"
+	validate_path_symlink
 
 	stop_all_nopeid
 	enable_audit_service
@@ -733,6 +758,7 @@ install_prod() {
 			exit 1
 		fi
 	fi
+	install_path_symlink
 	if [ -n "$backup_dir" ]; then
 		rm -rf "$backup_dir"
 	fi
@@ -781,6 +807,7 @@ uninstall_nopeid() {
 	cleanup_agentguard_for_user
 	rm -f "$PROD_PLIST" "$DEV_PLIST"
 	if [ "${NOPEID_PRIV_DEV:-0}" -ne 1 ]; then
+		remove_path_symlink
 		rm -rf "$INSTALL_ROOT"
 	fi
 	if [ "${NOPEID_PRIV_KEEP_DATA:-0}" -eq 1 ]; then

@@ -20,3 +20,5 @@ curl -fsSL https://nopeid.com/install.sh | sh -s -- --uninstall --purge-system
 
 Uninstall stops production and dev LaunchDaemons, stops the agent/helper, and
 terminates remaining known NopeID processes before removing managed files.
+Production uninstall also removes `/usr/local/bin/nopeid` when it is the
+installer-managed symlink.

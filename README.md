@@ -11,3 +11,10 @@ Documentation:
 - [Installation](docs/install/installation.md)
 - [Upgrade](docs/install/upgrade.md)
 - [Uninstall](docs/install/uninstall.md)
+
+Common commands after install:
+
+```sh
+nopeid --version
+sudo nopeid start
+```

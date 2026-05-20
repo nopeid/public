@@ -14,6 +14,7 @@ Production installs use fixed managed paths:
 /opt/nopeid/bin/nopeid
 /opt/nopeid/bin/nopeid-agent
 /opt/nopeid/bin/nopeid-helper
+/usr/local/bin/nopeid
 /Library/LaunchDaemons/com.nopeid.agent.plist
 /var/lib/nopeid
 /var/log/nopeid
@@ -23,6 +24,18 @@ Production installs use fixed managed paths:
 The installer downloads and verifies release artifacts as the invoking user, then
 uses `sudo` only for the privileged system install phase. Production installs do
 not accept custom install roots.
+
+The installer adds `/usr/local/bin/nopeid` as a symlink to the managed CLI, so a
+fresh terminal can run:
+
+```sh
+nopeid --version
+sudo nopeid start
+```
+
+`nopeid start` restarts the production LaunchDaemon
+`system/com.nopeid.agent`; `sudo` is required because macOS system LaunchDaemon
+control is privileged.
 
 Supported options:
 
