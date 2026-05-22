@@ -1,20 +1,28 @@
 {
-  "version": "v0.10.1",
+  "version": "v0.10.2",
   "channel": "stable",
-  "published_at": "2026-05-21T10:07:07Z",
-  "release_url": "https://github.com/nopeid/public/releases/tag/v0.10.1",
-  "install_command": "curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.10.1 sh",
+  "published_at": "2026-05-22T15:33:05Z",
+  "release_url": "https://github.com/nopeid/public/releases/tag/v0.10.2",
+  "install_command": "curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.10.2 sh",
   "minimum_macos": "26.0",
-  "build_commit": "a67713d8f62c5664c0c3eb5098315c3a7eb2c36d",
-  "build_time": "2026-05-21T10:07:07Z",
+  "build_commit": "cc446765f53f6398ced780b97e99f1fd87d428d2",
+  "build_time": "2026-05-22T15:33:05Z",
   "artifacts": {
     "macos-arm64": {
-      "url": "https://github.com/nopeid/public/releases/download/v0.10.1/nopeid-agent-macos-arm64.tar.gz",
-      "sha256": "ba59c6ed1ff53a048a2a1cbf169f97b6f99536c8f90412a895361194b451370b"
+      "url": "https://github.com/nopeid/public/releases/download/v0.10.2/nopeid-agent-macos-arm64.tar.gz",
+      "sha256": "2c87a5e605e4c84b2b950a39b8023c666a73c4b39a21d02d94cdfdce0fffc6cc"
     },
     "macos-amd64": {
-      "url": "https://github.com/nopeid/public/releases/download/v0.10.1/nopeid-agent-macos-amd64.tar.gz",
-      "sha256": "76ff6e04452f1e2aef0b3facd66889fdff39554617a839f3ac63d84fc371c923"
+      "url": "https://github.com/nopeid/public/releases/download/v0.10.2/nopeid-agent-macos-amd64.tar.gz",
+      "sha256": "14cab98788b9d1df570dddc8f03f201f7a81d14a4b658dce01d2c43bf2247957"
+    },
+    "oci-linux-arm64": {
+      "url": "https://github.com/nopeid/public/releases/download/v0.10.2/nopeid-agent-oci-linux-arm64.tar.gz",
+      "sha256": "fdb933e3283c038ce0215041105bf6b0223ca597f2c7893e4c6a4526c8ff3a80"
+    },
+    "oci-linux-amd64": {
+      "url": "https://github.com/nopeid/public/releases/download/v0.10.2/nopeid-agent-oci-linux-amd64.tar.gz",
+      "sha256": "d3de33851e99509c009d593960b0980e1bab22dc6efb393a58e1ac380dd5d525"
     }
   }
 }
