@@ -21,6 +21,7 @@ DEV=0
 DEV_BINARY=""
 DEV_HELPER=""
 TMP_DIR=""
+STAGED_OCI_IMAGE=""
 
 C_RESET=""
 C_INFO=""
@@ -346,6 +347,17 @@ stage_artifact() {
 	STAGED_ARTIFACT="$TMP_DIR/nopeid-agent-macos-$ART_ARCH.tar.gz"
 	download_with_retries "$artifact_url" "$STAGED_ARTIFACT"
 	verify_sha256 "$STAGED_ARTIFACT" "$artifact_sha"
+
+	oci_key="artifacts.oci-linux-$ART_ARCH"
+	oci_url="$(json_value "$oci_key.url" "$manifest")"
+	oci_sha="$(json_value "$oci_key.sha256" "$manifest")"
+	if [ -n "$oci_url" ] && [ -n "$oci_sha" ]; then
+		STAGED_OCI_IMAGE="$TMP_DIR/nopeid-agent-oci-linux-$ART_ARCH.tar.gz"
+		download_with_retries "$oci_url" "$STAGED_OCI_IMAGE"
+		verify_sha256 "$STAGED_OCI_IMAGE" "$oci_sha"
+	else
+		warn "Release manifest is missing oci-linux-$ART_ARCH artifact metadata; OCI sandbox image will use the embedded artifact if present."
+	fi
 }
 
 confirm_plan() {
@@ -419,7 +431,9 @@ confirm_plan() {
 run_privileged_phase() {
 	sudo env \
 		NOPEID_PRIV_ARTIFACT="$STAGED_ARTIFACT" \
+		NOPEID_PRIV_OCI_IMAGE="$STAGED_OCI_IMAGE" \
 		NOPEID_PRIV_VERSION="$EXPECTED_VERSION" \
+		NOPEID_PRIV_ART_ARCH="$ART_ARCH" \
 		NOPEID_PRIV_NO_START="$NO_START" \
 		NOPEID_PRIV_DEV="$DEV" \
 		NOPEID_PRIV_DEV_BINARY="$DEV_BINARY" \
@@ -583,6 +597,49 @@ ensure_settings_file() {
 	chmod 0600 "$settings_path"
 }
 
+install_oci_image_cache() {
+	embedded_image="$1"
+	arch="${NOPEID_PRIV_ART_ARCH:-}"
+	if [ -z "$arch" ]; then
+		warn "Unable to determine architecture for OCI sandbox image cache; skipping image install."
+		return
+	fi
+	if ! user="$(resolve_settings_user)"; then
+		warn "Unable to resolve target user for OCI sandbox image cache; skipping image install."
+		return
+	fi
+	home_dir="$(dscl . -read "/Users/$user" NFSHomeDirectory 2>/dev/null | awk '{print $2}')"
+	if [ -z "$home_dir" ]; then
+		warn "Unable to resolve home directory for $user; skipping OCI sandbox image install."
+		return
+	fi
+	settings_group="$(id -gn "$user")"
+	cache_root="$home_dir/.nopeid/oci-image-cache"
+	cache_dir="$cache_root/linux/$arch"
+	image_path="$cache_dir/nopeid-agent-oci.tar"
+	tmp_image="$cache_dir/.nopeid-agent-oci.tar.$$"
+
+	mkdir -p "$cache_dir"
+	chown "$user:$settings_group" "$home_dir/.nopeid" "$cache_root" "$cache_root/linux" "$cache_dir"
+	chmod 0700 "$home_dir/.nopeid" "$cache_root" "$cache_root/linux" "$cache_dir"
+
+	if [ -f "${NOPEID_PRIV_OCI_IMAGE:-}" ]; then
+		gzip -dc "$NOPEID_PRIV_OCI_IMAGE" > "$tmp_image"
+	elif [ -f "$embedded_image" ]; then
+		cp "$embedded_image" "$tmp_image"
+	else
+		warn "OCI sandbox image archive is missing; container sandbox will load only if the image already exists locally."
+		return
+	fi
+
+	chown "$user:$settings_group" "$tmp_image"
+	chmod 0600 "$tmp_image"
+	mv "$tmp_image" "$image_path"
+	chown "$user:$settings_group" "$image_path"
+	chmod 0600 "$image_path"
+	ok "OCI sandbox image installed"
+}
+
 start_service() {
 	service_id="$1"
 	plist="$2"
@@ -736,6 +793,7 @@ install_prod() {
 		exit 1
 	fi
 	install -m 0755 -o root -g wheel "$extract_root/nopeid-helper" "$stage_root/bin/nopeid-helper"
+	install_oci_image_cache "$extract_root/nopeid-agent-oci.tar"
 	ln -sfn nopeid "$stage_root/bin/nopeid-agent"
 	rm -rf "$extract_root"
 	validate_path_symlink
@@ -858,6 +916,7 @@ main() {
 	parse_args "$@"
 	need_cmd uname
 	need_cmd curl
+	need_cmd gzip
 	need_cmd tar
 	need_cmd shasum
 	need_cmd sudo
