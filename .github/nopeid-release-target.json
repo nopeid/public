@@ -1,28 +1,28 @@
 {
   "version": "v0.10.6",
   "channel": "stable",
-  "published_at": "2026-05-25T14:50:14Z",
+  "published_at": "2026-05-25T14:55:28Z",
   "release_url": "https://github.com/nopeid/public/releases/tag/v0.10.6",
   "install_command": "curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.10.6 sh",
   "minimum_macos": "26.0",
   "build_commit": "5f3dafc43a0cc197c6521f6dc79516164c2c6705",
-  "build_time": "2026-05-25T14:50:14Z",
+  "build_time": "2026-05-25T14:55:28Z",
   "artifacts": {
     "macos-arm64": {
       "url": "https://github.com/nopeid/public/releases/download/v0.10.6/nopeid-agent-macos-arm64.tar.gz",
-      "sha256": "80e5527fc12157579103afb81bed14a4b4478053a6563fb35b59564131c4a00b"
+      "sha256": "c8897392c56a4a535018e41d900393c9a40b343e33d58ca8db851346ad5db2b2"
     },
     "macos-amd64": {
       "url": "https://github.com/nopeid/public/releases/download/v0.10.6/nopeid-agent-macos-amd64.tar.gz",
-      "sha256": "7d9f4d93df16a9195608cf07f54cdeab318233b9c2248ed1fed4dee437abf89d"
+      "sha256": "c6d66f8975c974ac06b5c2a232bd7035161512aaed7f3134f26daa2e72504c35"
     },
     "oci-linux-arm64": {
       "url": "https://github.com/nopeid/public/releases/download/v0.10.6/nopeid-agent-oci-linux-arm64.tar.gz",
-      "sha256": "6f4bf1e9fd75ea6d3d42bdbb273a2b3f5e7512046f569f17854487137c8c4866"
+      "sha256": "bf30f32e51bc7f470d679e21ba3de8ee7a1441f59022c4cd8344e646898840f5"
     },
     "oci-linux-amd64": {
       "url": "https://github.com/nopeid/public/releases/download/v0.10.6/nopeid-agent-oci-linux-amd64.tar.gz",
-      "sha256": "de0b244272c267fb6f04e80b1e21f1c4244275ef280c0a3bf7903c2e6944407a"
+      "sha256": "41bb6a4b095084d09e8395f01a6f7365c7718d3ea5bd9ae310b08e6de9e680ca"
     }
   }
 }
