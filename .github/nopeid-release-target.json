@@ -1,28 +1,28 @@
 {
-  "version": "v0.10.8",
+  "version": "v0.10.9",
   "channel": "stable",
-  "published_at": "2026-05-26T13:36:01Z",
-  "release_url": "https://github.com/nopeid/public/releases/tag/v0.10.8",
-  "install_command": "curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.10.8 sh",
+  "published_at": "2026-05-26T16:29:43Z",
+  "release_url": "https://github.com/nopeid/public/releases/tag/v0.10.9",
+  "install_command": "curl -fsSL https://nopeid.com/install.sh | env NOPEID_VERSION=v0.10.9 sh",
   "minimum_macos": "26.0",
-  "build_commit": "eedde4fe9016d587f3718d3487850c73b24a0229",
-  "build_time": "2026-05-26T13:36:01Z",
+  "build_commit": "cd2b440812e3e1c66cc46d2a9361023dcfd6152a",
+  "build_time": "2026-05-26T16:29:43Z",
   "artifacts": {
     "macos-arm64": {
-      "url": "https://github.com/nopeid/public/releases/download/v0.10.8/nopeid-agent-macos-arm64.tar.gz",
-      "sha256": "0ceac745dc0ff781d9b8f642db64e447e9d3f46bfdaa4651e4b5ffe014854ce8"
+      "url": "https://github.com/nopeid/public/releases/download/v0.10.9/nopeid-agent-macos-arm64.tar.gz",
+      "sha256": "e08325390d6720193d8908c96bd5bcbb46b3be85e16871a72e310f757f5d8680"
     },
     "macos-amd64": {
-      "url": "https://github.com/nopeid/public/releases/download/v0.10.8/nopeid-agent-macos-amd64.tar.gz",
-      "sha256": "218d9e217e71b54bc5671ece9d5ba47191287838666fa7072f449604dd38c3ab"
+      "url": "https://github.com/nopeid/public/releases/download/v0.10.9/nopeid-agent-macos-amd64.tar.gz",
+      "sha256": "05a7694cb8c37e4897f3787a1678273e1f36c526a475fc4cb2e5913c00286a7b"
     },
     "oci-linux-arm64": {
-      "url": "https://github.com/nopeid/public/releases/download/v0.10.8/nopeid-agent-oci-linux-arm64.tar.gz",
-      "sha256": "fd2f7fbadf973d5de1cefb8b0ffa118f9a033afeea9b953540317b4850d68623"
+      "url": "https://github.com/nopeid/public/releases/download/v0.10.9/nopeid-agent-oci-linux-arm64.tar.gz",
+      "sha256": "d7767f52be13a3edde01218de0464c0ce78ad54226b71a4aad35f1f8fbe72777"
     },
     "oci-linux-amd64": {
-      "url": "https://github.com/nopeid/public/releases/download/v0.10.8/nopeid-agent-oci-linux-amd64.tar.gz",
-      "sha256": "42d84e459713aaf7102f48811ac1e87a368fb7914c40aa4029b26fe5ca07c280"
+      "url": "https://github.com/nopeid/public/releases/download/v0.10.9/nopeid-agent-oci-linux-amd64.tar.gz",
+      "sha256": "cd7ea9c232e92a213f338e61d0cf3700fe4f8dd5ea1d250578f2e946eb2f6cba"
     }
   }
 }
