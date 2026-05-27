@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="NopeID gives you visibility and control over AI agents on your endpoints.">
   <meta name="color-scheme" content="light dark">
-  <title>NopeID - On-Device Security</title>
+  <title>NopeID - On-Device Agentic Security</title>
   <link rel="icon" type="image/png" sizes="256x256" href="./favicon.png">
   <link rel="shortcut icon" type="image/png" href="./favicon.png">
   <link rel="apple-touch-icon" href="./favicon.png">
@@ -643,15 +643,7 @@
             </svg>
             macOS available
           </span>
-          <span class="badge is-muted">
-            <svg width="13" height="13" viewBox="0 0 88 88" fill="currentColor" aria-hidden="true">
-              <path
-                d="M0 12.4 35.7 7.5v34.5L0 42.2zm35.7 33.5v34.5L0 71.3V42.2zm4.9-39L87.3 0v41.5l-46.8-.2zm0 38.4 46.8-.3v36.8l-46.8-6.6z">
-              </path>
-            </svg>
-            Windows soon
-          </span>
-          <span class="badge is-muted">
+          <span class="badge">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 2a5 5 0 0 0-5 5v3.5L5 14v4h14v-4l-2-3.5V7a5 5 0 0 0-5-5Z"></path>
@@ -660,7 +652,7 @@
               <path d="M10 7h.01"></path>
               <path d="M14 7h.01"></path>
             </svg>
-            Linux soon
+            Linux available
           </span>
         </div>
 
@@ -687,7 +679,8 @@
               <p>Install NopeID on macOS with one command.</p>
             </div>
             <div class="install-actions">
-              <a class="copy-button" href="https://github.com/nopeid/public" aria-label="NopeID public repository on GitHub">
+              <a class="copy-button" href="https://github.com/nopeid/public"
+                aria-label="NopeID public repository on GitHub">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path
                     d="M12 .5A12 12 0 0 0 8.2 23.9c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 .1.8 2.1 3.4 1.5.1-.7.4-1.2.7-1.5-2.6-.3-5.4-1.3-5.4-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.9 5 18.9 5.3 18.9 5.3c.6 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.4 5.9.4.4.8 1.1.8 2.2v3.4c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z">
@@ -738,8 +731,7 @@
                       <path d="M6 18a4 4 0 0 1-2-7.46"></path>
                     </svg>
                   </span>
-                  <div><strong>Anomaly Detection</strong><span>Detect behavior that does not match the agent's expected
-                      task or session pattern.</span></div>
+                  <div><strong>Anomaly Detection</strong><span>Detect when behavior deviates from the norm.</span></div>
                 </div>
               </li>
               <li>
@@ -767,7 +759,8 @@
                       <path d="M8 17h8"></path>
                     </svg>
                   </span>
-                  <div><strong>Memory</strong><span>Watch persisted context for unsafe or unexpected changes.</span>
+                  <div><strong>Memory</strong><span>Watch persisted context for unsafe or unexpected changes that could
+                      modify the agent's behavior.</span>
                   </div>
                 </div>
               </li>
@@ -781,8 +774,8 @@
                       <path d="M5 5v14"></path>
                     </svg>
                   </span>
-                  <div><strong>Launch Safety</strong><span>Validate how an agent starts before giving it room to
-                      act.</span></div>
+                  <div><strong>Launch Safety</strong><span>Make sure the agent starts in a safe environment each
+                      time.</span></div>
                 </div>
               </li>
               <li>
@@ -798,8 +791,7 @@
                       <path d="M12 22v-4"></path>
                     </svg>
                   </span>
-                  <div><strong>Intent</strong><span>Compare actions against the task the agent is meant to
-                      complete.</span></div>
+                  <div><strong>Intent</strong><span>Match actions against the agent's intended purpose.</span></div>
                 </div>
               </li>
               <li>
@@ -812,7 +804,7 @@
                       <path d="M12 17h.01"></path>
                     </svg>
                   </span>
-                  <div><strong>Risky Commands</strong><span>Flag destructive, privileged, or suspicious terminal
+                  <div><strong>Risky Commands</strong><span>Prevent destructive, privileged, or suspicious
                       actions.</span></div>
                 </div>
               </li>
@@ -835,8 +827,8 @@
                 <p class="eyebrow">Runtime</p>
                 <h3>Choose the execution boundary</h3>
               </div>
-              <p class="feature-copy">Run agent activity in the right runtime for the task, from native host controls to
-                hostless or remote execution.</p>
+              <p class="feature-copy">Run agent activity in the right runtime for the task, from native host execution
+                to local or remote sandbox execution.</p>
             </div>
             <ul class="option-list">
               <li>
@@ -850,7 +842,7 @@
                       <path d="M8 17h6"></path>
                     </svg>
                   </span>
-                  <div><strong>Journaling / audit</strong><span>Record runtime actions for review, traceability, and
+                  <div><strong>Journaling and audit</strong><span>Record runtime actions for review, traceability, and
                       compliance.</span></div>
                 </div>
               </li>
@@ -864,8 +856,7 @@
                       <path d="M4 10v6a2 2 0 0 0 2 2h8"></path>
                     </svg>
                   </span>
-                  <div><strong>No sandbox running on host</strong><span>Keep untrusted execution off the user's
-                      machine.</span></div>
+                  <div><strong>Native Host Execution</strong><span>Run agent activity directly on the user's machine.</span></div>
                 </div>
               </li>
               <li>
@@ -878,8 +869,7 @@
                       <path d="M12 16v4"></path>
                     </svg>
                   </span>
-                  <div><strong>Native sandboxing</strong><span>Local policy controls for desktop agents.</span>
-                  </div>
+                  <div><strong>Sandbox</strong><span>Run agent activity in a secure, isolated local or remote environment with Docker or Apple Container.</span></div>
                 </div>
               </li>
             </ul>
@@ -984,8 +974,9 @@
             <p class="feature-copy">Deploy NopeID across your organization with custom scanners, fleet policies, audit
               reporting, procurement support, and controls for larger teams.</p>
             <div class="actions">
-              <a class="button primary" href="mailto:sales@nopeid.com?subject=NopeID%20enterprise%20demo">Book demo</a>
-              <a class="button secondary" href="mailto:sales@nopeid.com?subject=NopeID%20enterprise%20inquiry">Contact us</a>
+              <a class="button primary" href="mailto:sales@nopeid.com?subject=NopeID%20enterprise%20demo">Book a Demo</a>
+              <a class="button secondary" href="mailto:sales@nopeid.com?subject=NopeID%20enterprise%20inquiry">Contact
+                us</a>
             </div>
           </div>
           <ul class="enterprise-grid">
@@ -1002,7 +993,7 @@
                 </svg>
               </span>
               <strong>Custom scanners</strong>
-              <span>Add organization-specific checks for tools, repos, secrets, and workflows.</span>
+              <span>Add organization-specific checks for tools, repos, secrets, DLP, and workflows.</span>
             </li>
             <li>
               <span class="feature-item-icon" aria-hidden="true">
