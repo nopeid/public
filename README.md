@@ -90,8 +90,9 @@ audit reporting, procurement support, and controls for larger teams.
 
 Your data stays local.
 
-- No raw commands, prompts, file paths, file contents, credentials, usernames,
-  emails, account identities, or IP addresses are sent as analytics payloads.
+- Product analytics payloads do not include raw commands, prompts, file paths,
+  file contents, credentials, usernames, emails, account identities, or IP
+  address fields.
 - Product analytics can be disabled.
 - Enforcement, trust scoring, approvals, and protected runtime data stay on the
   machine.

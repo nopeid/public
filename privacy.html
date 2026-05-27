@@ -303,15 +303,26 @@
               <p>We collect only the information needed to run the website, respond to requests, and provide the product.</p>
               <ul>
                 <li>Website and install access logs, such as IP address, user agent, requested URL, and timestamp.</li>
+                <li>Cloudflare Web Analytics Real User Measurements (RUM), such as aggregate page and browser
+                  performance measurements from public site visits.</li>
                 <li>Contact information you send us, such as your email address and message content.</li>
                 <li>Enterprise account or support information you choose to provide.</li>
               </ul>
             </section>
 
             <section class="policy-section">
-              <h3>Website cookies</h3>
-              <p>The public NopeID website does not set tracking cookies or load third-party analytics scripts. If this
-                changes, we will update this policy.</p>
+              <h3>Website cookies and RUM</h3>
+              <p>The public NopeID website uses Cloudflare Web Analytics Real User Measurements (RUM) to understand
+                aggregate page performance and reliability.</p>
+              <ul>
+                <li>Cloudflare's RUM beacon does not store data in your browser or access browser storage such as
+                  cookies, localStorage, sessionStorage, or IndexedDB.</li>
+                <li>Cloudflare may receive source IP address as ordinary HTTPS connection metadata for the RUM request,
+                  but does not store it in core RUM databases or logs.</li>
+                <li>We do not have tracking cookies on the public website.</li>
+                <li>If Cloudflare security or traffic-management services set strictly necessary cookies, those cookies
+                  are not used for advertising or cross-site tracking.</li>
+              </ul>
             </section>
 
             <section class="policy-section">
@@ -333,21 +344,21 @@
             <section class="policy-section">
               <h3>What stays on your device</h3>
               <p>Raw agent prompts, reasoning, commands, files, file contents, runtime journals, and local policy records
-                stay on your device. Product analytics, when enabled, are limited to anonymous usage signals, security
-                event counts, and coarse environment details.</p>
+                stay on your device. Product analytics, when enabled, are limited to usage signals, security event
+                counts, and coarse environment details.</p>
             </section>
 
             <section class="policy-section">
               <h3>Product analytics</h3>
               <p>The installed NopeID agent includes a Usage Analytics setting, enabled by default and controlled from the
-                helper Privacy screen. When enabled, NopeID sends anonymous product analytics through Google Analytics
-                Measurement Protocol.</p>
+                helper Privacy screen. When enabled, NopeID sends limited product analytics through Google Analytics
+                Measurement Protocol using consent flags that deny ad user data and ad personalization.</p>
               <ul>
                 <li>Usage signals, such as agent starts, app opens, and active-use timing.</li>
                 <li>Settings flag states, such as whether major local protections are enabled.</li>
                 <li>Security event counts for injection, intent divergence, risky commands, blocked tools, blocked MCP
                   requests, and tool authorization outcomes.</li>
-                <li>Coarse environment details, such as app version, macOS major/minor version, country, anonymous install
+                <li>Coarse environment details, such as app version, macOS major/minor version, country, hashed install
                   ID, and hashed trace IDs.</li>
               </ul>
             </section>
@@ -370,9 +381,9 @@
             <section class="policy-section">
               <h3>Your choices</h3>
               <p>You can turn off Usage Analytics in the NopeID helper Privacy settings. When analytics are turned off,
-                the product may send one final anonymous opt-out event and then stops normal analytics events. You can
-                uninstall NopeID at any time and remove local product data from your device using the tools available in
-                your operating system.</p>
+                the product may send one final opt-out event and then stops normal analytics events. You can uninstall
+                NopeID at any time and remove local product data from your device using the tools available in your
+                operating system.</p>
             </section>
 
             <section class="policy-section">
@@ -387,7 +398,7 @@
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
-      <p>&copy; 2026 NopeID. All rights reserved.</p>
+      <p>&copy; 2026 NopeID. All rights reserved. No tracking cookies.</p>
       <div class="footer-links">
         <a href="./privacy">Privacy</a>
         <a href="https://github.com/nopeid/public/blob/master/LICENSE">EULA</a>
