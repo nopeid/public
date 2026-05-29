@@ -613,30 +613,60 @@ install_oci_image_cache() {
 		warn "Unable to resolve home directory for $user; skipping OCI sandbox image install."
 		return
 	fi
-	settings_group="$(id -gn "$user")"
 	cache_root="$home_dir/.nopeid/oci-image-cache"
 	cache_dir="$cache_root/linux/$arch"
 	image_path="$cache_dir/nopeid-agent-oci.tar"
 	tmp_image="$cache_dir/.nopeid-agent-oci.tar.$$"
+	root_tmp=""
 
-	mkdir -p "$cache_dir"
-	chown "$user:$settings_group" "$home_dir/.nopeid" "$cache_root" "$cache_root/linux" "$cache_dir"
-	chmod 0700 "$home_dir/.nopeid" "$cache_root" "$cache_root/linux" "$cache_dir"
+	# The cache lives in the target user's home directory. Keep privileged
+	# writes and ownership changes out of this tree so user-controlled
+	# symlinks cannot cause root to chown/chmod protected locations.
+	if ! sudo -u "$user" /bin/mkdir -p "$cache_dir"; then
+		warn "Unable to create OCI sandbox image cache as $user; skipping image install."
+		return
+	fi
+	if ! sudo -u "$user" /bin/chmod 0700 "$home_dir/.nopeid" "$cache_root" "$cache_root/linux" "$cache_dir"; then
+		warn "Unable to secure OCI sandbox image cache as $user; skipping image install."
+		return
+	fi
 
+	root_tmp="$(mktemp /tmp/nopeid-oci-image.XXXXXX)"
 	if [ -f "${NOPEID_PRIV_OCI_IMAGE:-}" ]; then
-		gzip -dc "$NOPEID_PRIV_OCI_IMAGE" > "$tmp_image"
+		if ! gzip -dc "$NOPEID_PRIV_OCI_IMAGE" > "$root_tmp"; then
+			rm -f "$root_tmp"
+			warn "Unable to unpack OCI sandbox image archive; skipping image install."
+			return
+		fi
 	elif [ -f "$embedded_image" ]; then
-		cp "$embedded_image" "$tmp_image"
+		if ! cat "$embedded_image" > "$root_tmp"; then
+			rm -f "$root_tmp"
+			warn "Unable to stage embedded OCI sandbox image archive; skipping image install."
+			return
+		fi
 	else
+		rm -f "$root_tmp"
 		warn "OCI sandbox image archive is missing; container sandbox will load only if the image already exists locally."
 		return
 	fi
 
-	chown "$user:$settings_group" "$tmp_image"
-	chmod 0600 "$tmp_image"
-	mv "$tmp_image" "$image_path"
-	chown "$user:$settings_group" "$image_path"
-	chmod 0600 "$image_path"
+	if ! sudo -u "$user" /bin/sh -c 'umask 077; cat > "$1"' sh "$tmp_image" < "$root_tmp"; then
+		rm -f "$root_tmp"
+		sudo -u "$user" /bin/rm -f "$tmp_image" >/dev/null 2>&1 || true
+		warn "Unable to write OCI sandbox image cache as $user; skipping image install."
+		return
+	fi
+	rm -f "$root_tmp"
+	if ! sudo -u "$user" /bin/chmod 0600 "$tmp_image"; then
+		sudo -u "$user" /bin/rm -f "$tmp_image" >/dev/null 2>&1 || true
+		warn "Unable to secure OCI sandbox image cache file as $user; skipping image install."
+		return
+	fi
+	if ! sudo -u "$user" /bin/mv "$tmp_image" "$image_path"; then
+		sudo -u "$user" /bin/rm -f "$tmp_image" >/dev/null 2>&1 || true
+		warn "Unable to finalize OCI sandbox image cache as $user; skipping image install."
+		return
+	fi
 	ok "OCI sandbox image installed"
 }
 
