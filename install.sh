@@ -650,8 +650,39 @@ start_service() {
 
 install_path_symlink() {
 	mkdir -p "$USER_BIN_DIR"
+	if ! validate_user_bin_dir; then
+		return 0
+	fi
 	validate_path_symlink
 	ln -sfn "$BIN_DIR/nopeid" "$USER_BIN_LINK"
+}
+
+validate_user_bin_dir() {
+	owner_uid="$(stat -f '%u' "$USER_BIN_DIR" 2>/dev/null || true)"
+	case "$owner_uid" in
+	*[!0-9]*|"") owner_uid="$(stat -c '%u' "$USER_BIN_DIR" 2>/dev/null || true)" ;;
+	esac
+	mode="$(stat -f '%Lp' "$USER_BIN_DIR" 2>/dev/null || true)"
+	case "$mode" in
+	*[!0-9]*|"") mode="$(stat -c '%a' "$USER_BIN_DIR" 2>/dev/null || true)" ;;
+	esac
+	case "$owner_uid:$mode" in
+	0:*) ;;
+	*)
+		warn "$USER_BIN_DIR is not owned by root; skipping $USER_BIN_LINK creation."
+		remove_path_symlink
+		return 1
+		;;
+	esac
+	group_perms="$(printf '%s' "$mode" | awk '{print substr($0, length($0)-1, 1)}')"
+	other_perms="$(printf '%s' "$mode" | awk '{print substr($0, length($0), 1)}')"
+	case "$group_perms$other_perms" in
+	*[2367]*)
+		warn "$USER_BIN_DIR is writable by non-root users; skipping $USER_BIN_LINK creation."
+		remove_path_symlink
+		return 1
+		;;
+	esac
 }
 
 validate_path_symlink() {
