@@ -20,10 +20,10 @@ Install NopeID on macOS with one command.
 curl -fsSL https://nopeid.com/install.sh | sh
 ```
 
-Then start the NopeID agent:
+Then start the NopeID agent with the root-owned managed CLI path:
 
 ```sh
-sudo nopeid start
+sudo /opt/nopeid/bin/nopeid start
 ```
 
 NopeID currently supports **macOS 26 Tahoe or newer**. Windows and Linux are

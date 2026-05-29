@@ -25,7 +25,8 @@ During upgrade, the installer:
 3. Stops the root agent and helper.
 4. Terminates remaining known NopeID agent/helper processes.
 5. Stages the new version under `/opt/nopeid/versions/<version>`.
-6. Updates `/usr/local/bin/nopeid` to the managed CLI.
+6. Updates `/usr/local/bin/nopeid` to the managed CLI when `/usr/local/bin`
+   is root-owned and not writable by non-root users.
 7. Rewrites the LaunchDaemon to the fixed production path.
 8. Starts the updated service unless `--no-start` is used.
 9. Verifies launchd loaded, the agent is alive, and `nopeid --version` matches.
@@ -37,8 +38,9 @@ unless `--no-start` was used.
 The helper can start a confirmed update through the root agent when trusted
 release metadata is available.
 
-After install or upgrade, restart the production agent with:
+After install or upgrade, restart the production agent with the root-owned
+managed CLI path:
 
 ```sh
-sudo nopeid start
+sudo /opt/nopeid/bin/nopeid start
 ```

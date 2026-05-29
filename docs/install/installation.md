@@ -25,15 +25,21 @@ The installer downloads and verifies release artifacts as the invoking user, the
 uses `sudo` only for the privileged system install phase. Production installs do
 not accept custom install roots.
 
-The installer adds `/usr/local/bin/nopeid` as a symlink to the managed CLI, so a
-fresh terminal can run:
+When `/usr/local/bin` is root-owned and not writable by non-root users, the
+installer adds `/usr/local/bin/nopeid` as a convenience symlink to the managed
+CLI. A fresh terminal can run unprivileged commands through `PATH`:
 
 ```sh
 nopeid --version
-sudo nopeid start
 ```
 
-`nopeid start` restarts the production LaunchDaemon
+For privileged operations, use the root-owned managed CLI path explicitly:
+
+```sh
+sudo /opt/nopeid/bin/nopeid start
+```
+
+`/opt/nopeid/bin/nopeid start` restarts the production LaunchDaemon
 `system/com.nopeid.agent`; `sudo` is required because macOS system LaunchDaemon
 control is privileged.
 

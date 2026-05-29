@@ -161,6 +161,13 @@ parse_args() {
 	done
 }
 
+validate_arg_combinations() {
+	if [ "$DEV" -ne 1 ] && { [ -n "$DEV_BINARY" ] || [ -n "$DEV_HELPER" ]; }; then
+		echo "--binary and --helper may only be used with --dev." >&2
+		exit 1
+	fi
+}
+
 default_dev_bin_dir() {
 	cwd_default="$(pwd -P)/agent/bin"
 	if [ -d "$cwd_default" ]; then
@@ -574,6 +581,35 @@ resolve_settings_user() {
 	printf '%s\n' "$user"
 }
 
+ensure_user_private_dir() {
+	user="$1"
+	path="$2"
+	label="$3"
+
+	if [ -L "$path" ]; then
+		warn "$label is a symlink ($path); skipping settings initialization."
+		return 1
+	fi
+	if [ -e "$path" ] && [ ! -d "$path" ]; then
+		warn "$label exists but is not a directory ($path); skipping settings initialization."
+		return 1
+	fi
+	if [ ! -d "$path" ]; then
+		if ! sudo -u "$user" env NOPEID_DIR="$path" /bin/sh -c 'umask 077; mkdir "$NOPEID_DIR"'; then
+			warn "Unable to create $label ($path); skipping settings initialization."
+			return 1
+		fi
+	fi
+	if [ -L "$path" ] || [ ! -d "$path" ]; then
+		warn "$label was replaced during setup ($path); skipping settings initialization."
+		return 1
+	fi
+	if ! sudo -u "$user" chmod 0700 "$path"; then
+		warn "Unable to secure $label ($path); skipping settings initialization."
+		return 1
+	fi
+}
+
 ensure_settings_file() {
 	if ! user="$(resolve_settings_user)"; then
 		warn "Unable to resolve target user for settings.json; skipping settings initialization."
@@ -584,17 +620,34 @@ ensure_settings_file() {
 		warn "Unable to resolve home directory for $user; skipping settings initialization."
 		return
 	fi
-	settings_dir="$home_dir/.nopeid/etc"
+	settings_root="$home_dir/.nopeid"
+	settings_dir="$settings_root/etc"
 	settings_path="$settings_dir/settings.json"
-	settings_group="$(id -gn "$user")"
-	mkdir -p "$settings_dir"
-	chown "$user:$settings_group" "$settings_dir"
-	chmod 0700 "$settings_dir"
-	if [ ! -f "$settings_path" ]; then
-		printf '{}\n' > "$settings_path"
+
+	ensure_user_private_dir "$user" "$settings_root" "NopeID settings directory" || return 0
+	ensure_user_private_dir "$user" "$settings_dir" "NopeID settings etc directory" || return 0
+
+	if [ -L "$settings_path" ]; then
+		warn "settings.json is a symlink ($settings_path); skipping settings initialization."
+		return
 	fi
-	chown "$user:$settings_group" "$settings_path"
-	chmod 0600 "$settings_path"
+	if [ -e "$settings_path" ] && [ ! -f "$settings_path" ]; then
+		warn "settings.json exists but is not a regular file ($settings_path); skipping settings initialization."
+		return
+	fi
+	if [ ! -f "$settings_path" ]; then
+		if ! sudo -u "$user" env NOPEID_SETTINGS_PATH="$settings_path" /bin/sh -c 'umask 077; printf "{}\n" > "$NOPEID_SETTINGS_PATH"'; then
+			warn "Unable to create settings.json ($settings_path); skipping settings initialization."
+			return
+		fi
+	fi
+	if [ -L "$settings_path" ] || [ ! -f "$settings_path" ]; then
+		warn "settings.json was replaced during setup ($settings_path); skipping settings initialization."
+		return
+	fi
+	if ! sudo -u "$user" chmod 0600 "$settings_path"; then
+		warn "Unable to secure settings.json ($settings_path); skipping settings initialization."
+	fi
 }
 
 install_oci_image_cache() {
@@ -613,30 +666,60 @@ install_oci_image_cache() {
 		warn "Unable to resolve home directory for $user; skipping OCI sandbox image install."
 		return
 	fi
-	settings_group="$(id -gn "$user")"
 	cache_root="$home_dir/.nopeid/oci-image-cache"
 	cache_dir="$cache_root/linux/$arch"
 	image_path="$cache_dir/nopeid-agent-oci.tar"
 	tmp_image="$cache_dir/.nopeid-agent-oci.tar.$$"
+	root_tmp=""
 
-	mkdir -p "$cache_dir"
-	chown "$user:$settings_group" "$home_dir/.nopeid" "$cache_root" "$cache_root/linux" "$cache_dir"
-	chmod 0700 "$home_dir/.nopeid" "$cache_root" "$cache_root/linux" "$cache_dir"
+	# The cache lives in the target user's home directory. Keep privileged
+	# writes and ownership changes out of this tree so user-controlled
+	# symlinks cannot cause root to chown/chmod protected locations.
+	if ! sudo -u "$user" /bin/mkdir -p "$cache_dir"; then
+		warn "Unable to create OCI sandbox image cache as $user; skipping image install."
+		return
+	fi
+	if ! sudo -u "$user" /bin/chmod 0700 "$home_dir/.nopeid" "$cache_root" "$cache_root/linux" "$cache_dir"; then
+		warn "Unable to secure OCI sandbox image cache as $user; skipping image install."
+		return
+	fi
 
+	root_tmp="$(mktemp /tmp/nopeid-oci-image.XXXXXX)"
 	if [ -f "${NOPEID_PRIV_OCI_IMAGE:-}" ]; then
-		gzip -dc "$NOPEID_PRIV_OCI_IMAGE" > "$tmp_image"
+		if ! gzip -dc "$NOPEID_PRIV_OCI_IMAGE" > "$root_tmp"; then
+			rm -f "$root_tmp"
+			warn "Unable to unpack OCI sandbox image archive; skipping image install."
+			return
+		fi
 	elif [ -f "$embedded_image" ]; then
-		cp "$embedded_image" "$tmp_image"
+		if ! cat "$embedded_image" > "$root_tmp"; then
+			rm -f "$root_tmp"
+			warn "Unable to stage embedded OCI sandbox image archive; skipping image install."
+			return
+		fi
 	else
+		rm -f "$root_tmp"
 		warn "OCI sandbox image archive is missing; container sandbox will load only if the image already exists locally."
 		return
 	fi
 
-	chown "$user:$settings_group" "$tmp_image"
-	chmod 0600 "$tmp_image"
-	mv "$tmp_image" "$image_path"
-	chown "$user:$settings_group" "$image_path"
-	chmod 0600 "$image_path"
+	if ! sudo -u "$user" /bin/sh -c 'umask 077; cat > "$1"' sh "$tmp_image" < "$root_tmp"; then
+		rm -f "$root_tmp"
+		sudo -u "$user" /bin/rm -f "$tmp_image" >/dev/null 2>&1 || true
+		warn "Unable to write OCI sandbox image cache as $user; skipping image install."
+		return
+	fi
+	rm -f "$root_tmp"
+	if ! sudo -u "$user" /bin/chmod 0600 "$tmp_image"; then
+		sudo -u "$user" /bin/rm -f "$tmp_image" >/dev/null 2>&1 || true
+		warn "Unable to secure OCI sandbox image cache file as $user; skipping image install."
+		return
+	fi
+	if ! sudo -u "$user" /bin/mv "$tmp_image" "$image_path"; then
+		sudo -u "$user" /bin/rm -f "$tmp_image" >/dev/null 2>&1 || true
+		warn "Unable to finalize OCI sandbox image cache as $user; skipping image install."
+		return
+	fi
 	ok "OCI sandbox image installed"
 }
 
@@ -650,8 +733,54 @@ start_service() {
 
 install_path_symlink() {
 	mkdir -p "$USER_BIN_DIR"
+	if ! validate_user_bin_dir; then
+		return 0
+	fi
 	validate_path_symlink
 	ln -sfn "$BIN_DIR/nopeid" "$USER_BIN_LINK"
+}
+
+preflight_path_symlink() {
+	if [ ! -d "$USER_BIN_DIR" ]; then
+		return
+	fi
+	if ! validate_user_bin_dir 0; then
+		return
+	fi
+	validate_path_symlink
+}
+
+validate_user_bin_dir() {
+	warn_on_skip="${1:-1}"
+	owner_uid="$(stat -f '%u' "$USER_BIN_DIR" 2>/dev/null || true)"
+	case "$owner_uid" in
+	*[!0-9]*|"") owner_uid="$(stat -c '%u' "$USER_BIN_DIR" 2>/dev/null || true)";;
+	esac
+	mode="$(stat -f '%Lp' "$USER_BIN_DIR" 2>/dev/null || true)"
+	case "$mode" in
+	*[!0-9]*|"") mode="$(stat -c '%a' "$USER_BIN_DIR" 2>/dev/null || true)";;
+	esac
+	case "$owner_uid:$mode" in
+	0:*) ;;
+	*)
+		if [ "$warn_on_skip" -eq 1 ]; then
+			warn "$USER_BIN_DIR is not owned by root; skipping $USER_BIN_LINK creation."
+			remove_path_symlink
+		fi
+		return 1
+		;;
+	esac
+	group_perms="$(printf '%s' "$mode" | awk '{print substr($0, length($0)-1, 1)}')"
+	other_perms="$(printf '%s' "$mode" | awk '{print substr($0, length($0), 1)}')"
+	case "$group_perms$other_perms" in
+	*[2367]*)
+		if [ "$warn_on_skip" -eq 1 ]; then
+			warn "$USER_BIN_DIR is writable by non-root users; skipping $USER_BIN_LINK creation."
+			remove_path_symlink
+		fi
+		return 1
+		;;
+	esac
 }
 
 validate_path_symlink() {
@@ -730,17 +859,27 @@ cleanup_agentguard_for_user() {
 	fi
 
 	agentguard_bin=""
-	for candidate in \
-		"${NOPEID_PRIV_DEV_BINARY:-}" \
-		"$(plist_program "$DEV_PLIST")" \
-		"$BIN_DIR/nopeid" \
-		"$CURRENT_LINK/bin/nopeid"
-	do
-		if [ -n "$candidate" ] && [ -x "$candidate" ]; then
-			agentguard_bin="$candidate"
-			break
-		fi
-	done
+	if [ "${NOPEID_PRIV_DEV:-0}" -eq 1 ]; then
+		for candidate in \
+			"${NOPEID_PRIV_DEV_BINARY:-}" \
+			"$(plist_program "$DEV_PLIST")"
+		do
+			if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+				agentguard_bin="$candidate"
+				break
+			fi
+		done
+	else
+		for candidate in \
+			"$BIN_DIR/nopeid" \
+			"$CURRENT_LINK/bin/nopeid"
+		do
+			if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+				agentguard_bin="$candidate"
+				break
+			fi
+		done
+	fi
 
 	if [ -n "$agentguard_bin" ]; then
 		if "$agentguard_bin" tool agentguard uninstall --target-user "$user"; then
@@ -768,6 +907,7 @@ install_prod() {
 		echo "Staged artifact is missing: $artifact" >&2
 		exit 1
 	fi
+	preflight_path_symlink
 
 	stage_root="$VERSIONS_DIR/.stage-$version-$$"
 	extract_root="$stage_root/extract"
@@ -796,7 +936,6 @@ install_prod() {
 	install_oci_image_cache "$extract_root/nopeid-agent-oci.tar"
 	ln -sfn nopeid "$stage_root/bin/nopeid-agent"
 	rm -rf "$extract_root"
-	validate_path_symlink
 
 	stop_all_nopeid
 	enable_audit_service
@@ -914,6 +1053,7 @@ ROOT_SCRIPT
 main() {
 	init_ui
 	parse_args "$@"
+	validate_arg_combinations
 	need_cmd uname
 	need_cmd curl
 	need_cmd gzip
