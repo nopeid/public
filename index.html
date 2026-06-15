@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="NopeID gives you visibility and control over AI agents on your endpoints.">
+  <meta name="color-scheme" content="light dark">
+  <title>NopeID - On-Device Agentic Security</title>
+  <link rel="icon" type="image/png" sizes="256x256" href="./favicon.png">
+  <link rel="shortcut icon" type="image/png" href="./favicon.png">
+  <link rel="apple-touch-icon" href="./favicon.png">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #f7f8fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #5b6472;
+      --faint: #8a94a3;
+      --border: #e3e7ef;
+      --primary: #2563eb;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #090d14;
+        --bg-soft: #101722;
+        --card: #0e1520;
+        --text: #f8fafc;
+        --muted: #a3adbc;
+        --faint: #687586;
+        --border: rgba(255, 255, 255, 0.1);
+        --primary: #60a5fa;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .site-header {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav,
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 750;
+    }
+
+    .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      overflow: hidden;
+    }
+
+    .brand-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hero {
+      position: relative;
+      display: flex;
+      align-items: center;
+      flex: 1;
+      overflow: hidden;
+      padding: 136px 0 72px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.12), transparent 42%),
+        linear-gradient(180deg, var(--bg-soft), var(--bg));
+    }
+
+    .hero .wrap {
+      position: relative;
+      max-width: 920px;
+      text-align: center;
+    }
+
+    .badges,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--card) 84%, transparent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    h1,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 22px;
+      font-size: clamp(44px, 8vw, 76px);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .accent {
+      color: var(--primary);
+    }
+
+    .lede {
+      max-width: 720px;
+      margin: 22px auto 0;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 20px);
+      line-height: 1.7;
+    }
+
+    .actions {
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 48px;
+      padding: 0 22px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 750;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      color: #ffffff;
+      background: #2563eb;
+    }
+
+    .button.primary:hover {
+      background: #1d4ed8;
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--border);
+      color: var(--faint);
+      background: var(--bg);
+      font-size: 13px;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 28px 0;
+    }
+
+    .footer-inner a {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .footer-inner a:hover {
+      color: var(--text);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        padding-top: 116px;
+      }
+
+      .actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .button {
+        width: 100%;
+      }
+
+      .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="./" aria-label="NopeID home">
+        <span class="brand-icon" aria-hidden="true">
+          <img src="./tray-lightmode.png" alt="">
+        </span>
+        <span>NopeID</span>
+      </a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div class="badges" aria-label="Platform availability">
+          <span class="badge">
+            <svg width="13" height="13" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true">
+              <path
+                d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 52.3-11.4 69.5-34.3z">
+              </path>
+            </svg>
+            macOS
+          </span>
+          <span class="badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2a5 5 0 0 0-5 5v3.5L5 14v4h14v-4l-2-3.5V7a5 5 0 0 0-5-5Z"></path>
+              <path d="M8 18v2"></path>
+              <path d="M16 18v2"></path>
+              <path d="M10 7h.01"></path>
+              <path d="M14 7h.01"></path>
+            </svg>
+            Linux
+          </span>
+          <span class="badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 5.4 10.6 4v8H3V5.4Zm9.4-1.7L21 2.2V12h-8.6V3.7ZM3 13.8h7.6v8L3 20.6v-6.8Zm9.4 0H21v9.1l-8.6-1.4v-7.7Z"></path>
+            </svg>
+            Windows
+          </span>
+        </div>
+
+        <h1>Secure your<br><span class="accent">AI agent runtime</span></h1>
+        <p class="lede">NopeID gives you visibility and control over AI agents across your endpoints. Discover shadow AI, protect sensitive reasoning, and block risky behavior in real time, while keeping your data secure, private, and compliant.</p>
+
+        <div class="actions">
+          <a class="button primary" href="mailto:sales@nopeid.com?subject=NopeID%20demo%20request">Book a Demo
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>&copy; 2026 NopeID. All rights reserved. No tracking cookies.</p>
+      <div class="footer-links">
+        <a href="./privacy">Privacy</a>
+        <a href="https://github.com/nopeid" aria-label="NopeID on GitHub">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              d="M12 .5A12 12 0 0 0 8.2 23.9c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 .1.8 2.1 3.4 1.5.1-.7.4-1.2.7-1.5-2.6-.3-5.4-1.3-5.4-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.9 5 18.9 5.3 18.9 5.3c.6 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.4 5.9.4.4.8 1.1.8 2.2v3.4c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z">
+            </path>
+          </svg>
+        </a>
+        <a href="mailto:sales@nopeid.com">sales@nopeid.com</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
